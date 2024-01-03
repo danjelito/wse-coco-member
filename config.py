@@ -1,1 +1,1 @@
-month= '11 nov 2023' # note: to find attendance data folder for current month
+month= '12 dec 2023' # note: to find attendance data folder for current month

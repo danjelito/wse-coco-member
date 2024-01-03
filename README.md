@@ -4,6 +4,7 @@
 
 1. **Coco Member Data:**
     - Extracted from coco offline & online, with filter: member end date from 12 month prior today to NONE.
+    - Include all columns except "Activities".
     - There are two files for each month. 
     - Download each file multiple times to make sure that every member data is exported.
 

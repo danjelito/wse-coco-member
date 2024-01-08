@@ -105,3 +105,33 @@ def get_center(df_: pd.DataFrame) -> pd.Series:
 
     student_center = np.select(conditions, choices, default=np.NaN)
     return student_center
+
+def get_area(df_):
+    """Determine the area of the student.
+
+    :param pd.DataFrame df_: Dataframe.
+    :return pd.Series: Area of each student. 
+    """
+    conditions = [
+        df_["student_center"].isna(),
+        df_["student_center"] == "Corporate",
+        df_["student_center"] == "Online Center",
+        df_["student_center"].isin(jkt_1),
+        df_["student_center"].isin(jkt_2),
+        df_["student_center"].isin(jkt_3),
+        df_["student_center"].isin(bdg),
+        df_["student_center"].isin(sby),
+    ]
+    choices = [
+        np.nan, 
+        "Corporate", 
+        "Online Center", 
+        "JKT 1",
+        "JKT 2",
+        "JKT 3",
+        "BDG",
+        "SBY",
+    ]
+    area = np.select(conditions, choices, default="ERROR")
+    assert (area == "ERROR").sum() == 0, "Some centers are unmapped to area"
+    return area

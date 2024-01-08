@@ -11,7 +11,7 @@ sby = ["PKW"]
 centers = jkt_1 + jkt_2 + jkt_3 + bdg + sby
 
 
-def create_student_membership(df: pd.DataFrame):
+def create_student_membership(df: pd.DataFrame) -> pd.Series:
     """
         Create series marking student membership type.
         Standard Deluxe can join online and offline class.
@@ -48,7 +48,14 @@ def create_student_membership(df: pd.DataFrame):
     return memberships
 
 
-def get_cpt(df_: pd.DataFrame):
+def get_cpt(df_: pd.DataFrame) -> pd.Series:
+    """Determine whether a student is a CPT student or not
+    based on consultants and ID.
+
+    :param pd.DataFrame df_: Dataframe.
+    :return pd.Series: Boolean.
+    """
+
     cpt_consultants = [
         "PUTRI HANDAYANI KUN ANDIKA",
         "ZULFADLI ZULFADLI",
@@ -68,23 +75,33 @@ def get_cpt(df_: pd.DataFrame):
     return is_cpt
 
 
-def get_center(df_):
+def get_center(df_: pd.DataFrame) -> pd.Series:
+    """Determine the center of the student
+    based on the marker inside the name (for example DLC GC).
+
+    :param pd.DataFrame df_: Dataframe.
+    :return pd.Series: Center of each student. If no match the np.nan.
+    """
+
+    pattern = f'({"|".join(centers)})'
+
     conditions = [
         (df_["is_cpt"] == True),
-        (df_["membership"].str.lower() == "go"),
-        (df_["student_id"].str.lower().str.contains("dlx|vip", na=False)),
+        (df_["student_membership"].str.lower() == "go"),
+        (df_["student_membership"].str.lower().isin(["deluxe", "vip"])),
     ]
+
     choices = [
         "Corporate",
         "Online Center",
         (
-            df_.loc[:, "student_id"]
-            .str.extract("(\w+\))", expand=False)
+            df_["student_code"]
+            .str.extract("(\(.+\))", expand=False)
+            .str.replace("(", "", regex=False)
             .str.replace(")", "", regex=False)
-            .replace("VIP", np.NaN)
-            .replace("DLX", np.NaN)
+            .str.extract(pattern, expand=False)
         ),
     ]
-    centers = np.select(conditions, choices, default=np.NaN)
-    centers_clean = [c if c in center_list else np.NaN for c in centers]
-    return centers_clean
+
+    student_center = np.select(conditions, choices, default=np.NaN)
+    return student_center

@@ -1,5 +1,7 @@
 # Coco Member Processor
 
+This is a program to clean the member data from Core Course.
+
 ## Data Source:
 
 1. **Coco Member Data:**
@@ -19,4 +21,4 @@
 The output of this program is used for:
 
 1. Raw data for Experience Management Report - Member Cohort
-
+2. Member Population per Center Report

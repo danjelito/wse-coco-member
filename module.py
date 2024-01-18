@@ -11,6 +11,22 @@ sby = ["PKW"]
 centers = jkt_1 + jkt_2 + jkt_3 + bdg + sby
 
 
+def create_student_code(df_: pd.DataFrame) -> pd.Series:
+    """Create new student code from last name, first name and code
+    Like last_name first_name code.
+
+    :param pd.DataFrame df_: DF to process.
+    :return pd.Series: Student code.
+    """
+    return (
+        df_["last_name"].str.upper()
+        + " "
+        + df_["first_name"].str.upper()
+        + " - "
+        + df_["student_code"].astype("str")
+    ).str.strip()
+
+
 def create_student_membership(df: pd.DataFrame) -> pd.Series:
     """
         Create series marking student membership type.
@@ -80,6 +96,7 @@ def get_cpt(df_: pd.DataFrame) -> pd.Series:
 
 def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
     """
+    ! NEED TO DEBUG WHY SOME ARE NOT MAPPED
     Get member center from their consultant's center.
     Useful for members who does not have center identifier.
 
@@ -88,7 +105,7 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
     """
 
     map_consultant = {
-        "SalawATI (PP) NATALIA JOPHINA": "PP",
+        "SALAWATI (PP) NATALIA JOPHINA": "PP",
         "YAN FIRSUS TUMANGGOR (KK) SAMUEL": "KK",
         "(DG) ABIMANYU ABDUL KARIM": "DG",
         "RAVEN RIZQULLAH (CBB) MUHAMMAD": "CBB",
@@ -140,6 +157,62 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "ANGGA ERON": "KK",
         "RAVEN RIZQULLAH MUHAMMAD": "CBB",
         "ROSADI IMRON": "KK",
+        # new ""
+        "SUNARTO (BSD) EUPHEMIA ERNEST": "BSD",
+        "SUBANDI (PKW) WILLIAM HERDIYANTO": "PKW",
+        "(DG) HUTASOIT ESTHER SETIAWATI": "DG",
+        "NUGROHO (LW) YOHANES ADHI": "LW",
+        "VISCA (GC) NATHASYA MONICA": "GC",
+        "LESMANA PUTRI (GC) CHANELEEN MARVEL": "GC",
+        "(DG) PURBA RAPHAEL ZEFANYA": "DG",
+        "PATRIASARI (SDC) RUTH EMY": "SDC",
+        "KHOIRURRIZKY (PKW)FIRDA": "PKW",
+        "JABRY (GC) FAIS AL": "GC",
+        "AMANI (LW) SUHA": "LW",
+        "IBRAHIM (PP) FAISAL MAULANA": "PP",
+        "RAMADHAN (CBB) ALDI": "CBB",
+        "(DG) SALSHABILA SUDRAJAT ALTIARA ASRA": "DG",
+        "IDAYATI (PKW) DILLA": "PKW",
+        "AREZANTI (PP) SOPHIA DEWI": "PP",
+        "HIDAYAT (LW) DIMAS DARMAWAN SUSILO": "LW",
+        "THEODORUS (PP) KEVIN JOSHUA": "PP",
+        "PRATIWI (BSD) SITI CHOIRIYAH": "BSD",
+        "VIRGIANO (PKW) MAXELL": "PKW",
+        "BAYU SYAHPUTRO (SDC) MUHAMMAD": "SDC",
+        "WINARDO (KK) ABRI": "KK",
+        "ROMAINUR (KK) SILVIA OLYVERA": "KK",
+        "(DG) ABIMANYU ABDUL KARIM": "DG",
+        "NUGROHO RAHARDIAN WAHYU": "SDC",
+        "CHUMAIROH RAHMA": "GC",
+        "WIJAYA MEVIS VALERIA": "PP",
+        "SIREGAR TIURMAIDA": "KK",
+        "ANGGRAINI DIAH AYU": "KK",
+        "DANEA SINDI DINI": "KK",
+        "SIMANJUNTAK YANUAR JOSUA ALBERT MILANO": "PKW",
+        "NURYADI DEDE ALI": "KK",
+        "SHIDIQ NUGRAHA MUHAMAD IQBAL": "GC",
+        "LELITYA ZARAH": "KK",
+        "ZAELANI MUHAMMAD SOLEH": "PP",
+        "CHANDRA CHANDRA": "PP",
+        "PRATIWI PUSPA": "PKW",
+        "PUTRI AISYAH JAZULI": "PKW",
+        "ESTUNINGTYAS MENIK": "PP",
+        "SUNARTO EUPHEMIA ERNEST": "GC",
+        "LEE GABRILLE": "SDC",
+        "RAMADHAN ALDI": "CBB",
+        "EMY PATRIASARI RUTH": "SDC",
+        "YUNINGSIH YUNI": "GC",
+        "SIAHAAN RUTH ANGGRAINI": "SDC",
+        "ADLINNAKA ALNOCHAJASHANY": "CBB",
+        "MICHELLE FEMME": "GC",
+        "HIDAYAT DIMAS": "LW",
+        "NUGROHO YOHANES": "LW",
+        "JABRY FAIS AL": "GC",
+        "ZEFANYA PURBA RAPHAEL": "DG",
+        "SUBANDI WILLIAM HERDIYANTO": "PKW",
+        "VISCA NATHASYA": "GC",
+        "SYAHPUTRA MUHAMMAD ICHSAN": "GC",
+        "KARIM ABDUL": "DG",
     }
     return consultant.map(map_consultant, na_action=None)
 
@@ -223,8 +296,7 @@ def clean_phone_number(ser: pd.Series) -> pd.Series:
     :return pd.Series: cleaned phone number.
     """
     return (
-        ser
-        .astype(str)
+        ser.astype(str)
         .str.replace("-", "", regex=False)
         .str.replace("+", "", regex=False)
         .str.strip()

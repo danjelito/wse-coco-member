@@ -24,3 +24,5 @@ The output of this program is used for:
 2. Member Population per Center Report (in Experience Management Report).
 
 ## Important Notes:
+
+1. Keep map_areas in config.py updated.

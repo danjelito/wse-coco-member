@@ -1,10 +1,15 @@
 import config
 
+
 def test_all_memberships_are_filled(df_clean):
     """
     All memberships should be filled with no blank.
     """
-    assert sorted(df_clean["student_membership"].unique()) == ["Deluxe", "GO", "VIP"]
+    assert sorted(df_clean["student_membership"].unique()) == [
+        "Deluxe",
+        "GO",
+        "VIP",
+    ], "test_all_memberships_are_filled failed"
 
 
 def test_all_centers_are_filled(df_clean):
@@ -18,20 +23,19 @@ def test_all_centers_are_filled(df_clean):
     centers = list(chain(*centers_nested))
 
     unmapped = set(df_clean["student_center"].unique()) - set(centers)
-    assert not unmapped, f"{unmapped} is incorrectly mapped"
+    assert (
+        not unmapped
+    ), f"test_all_centers_are_filled failed, {unmapped} is incorrectly mapped"
 
 
 def test_all_areas_are_filled(df_clean):
     """
     All areas should be filled with no blank.
     """
-
-    from itertools import chain
-
-    areas = list(config.map_areas.keys())
-
-    unmapped = set(df_clean["student_area"].unique()) - set(areas)
-    assert not unmapped, f"{unmapped} is incorrectly mapped"
+    unmapped = set(df_clean["student_area"].unique()) - set(config.map_areas.keys())
+    assert (
+        not unmapped
+    ), f"test_all_areas_are_filled failed, {unmapped} is incorrectly mapped"
 
 
 def test_cpt_members_in_cpt_area(df_clean):
@@ -45,7 +49,7 @@ def test_cpt_members_in_cpt_area(df_clean):
         )
         .sum()
         .sum()
-    )
+    ), "test_cpt_members_in_cpt_area failed"
 
 
 def test_noncpt_members_in_noncpt_area(df_clean):
@@ -59,4 +63,4 @@ def test_noncpt_members_in_noncpt_area(df_clean):
         )
         .sum()
         .sum()
-    )
+    ), "test_noncpt_members_in_noncpt_area"

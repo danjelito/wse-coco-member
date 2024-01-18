@@ -1,18 +1,11 @@
 import pandas as pd
 import numpy as np
-
-# map centre here
-# note: update if there are new centers
-jkt_1 = ["PP", "SDC", "KG"]
-jkt_2 = ["GC", "LW", "BSD", "TBS"]
-jkt_3 = ["KK", "CBB", "SMB"]
-bdg = ["DG"]
-sby = ["PKW"]
-centers = jkt_1 + jkt_2 + jkt_3 + bdg + sby
+import config
 
 
 def create_student_code(df_: pd.DataFrame) -> pd.Series:
-    """Create new student code from last name, first name and code
+    """
+    Create new student code from last name, first name and code
     Like last_name first_name code.
 
     :param pd.DataFrame df_: DF to process.
@@ -27,7 +20,7 @@ def create_student_code(df_: pd.DataFrame) -> pd.Series:
     ).str.strip()
 
 
-def create_student_membership(df: pd.DataFrame) -> pd.Series:
+def create_student_membership(df_: pd.DataFrame) -> pd.Series:
     """
         Create series marking student membership type.
         Standard Deluxe can join online and offline class.
@@ -41,13 +34,13 @@ def create_student_membership(df: pd.DataFrame) -> pd.Series:
         memberships
     """
 
-    membership_contains_std = df["service_type"] == "Standard"
-    membership_contains_vip = df["service_type"] == "VIP"
+    membership_contains_std = df_["service_type"] == "Standard"
+    membership_contains_vip = df_["service_type"] == "VIP"
     name_contains_dlx = (
-        df["student_code"].str.upper().str.contains("(DLX", regex=False, na=False)
+        df_["student_code"].str.upper().str.contains("(DLX", regex=False, na=False)
     )
     name_contains_go = (
-        df["student_code"].str.upper().str.contains("(GO", regex=False, na=False)
+        df_["student_code"].str.upper().str.contains("(GO", regex=False, na=False)
     )
     mask_deluxe_1 = (~name_contains_go) & membership_contains_std
     mask_deluxe_2 = (~name_contains_go) & name_contains_dlx
@@ -59,7 +52,10 @@ def create_student_membership(df: pd.DataFrame) -> pd.Series:
         membership_contains_vip,
     ]
     choices = ["GO", "Deluxe", "Deluxe", "VIP"]
-    memberships = np.select(conditions, choices, default="Not Specified")
+    memberships = np.select(conditions, choices, default="NONE")
+
+    # assert that all memberships are specified
+    assert not (memberships == "NONE").sum()
 
     return memberships
 
@@ -213,11 +209,17 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "VISCA NATHASYA": "GC",
         "SYAHPUTRA MUHAMMAD ICHSAN": "GC",
         "KARIM ABDUL": "DG",
+        'WSE CAD': "HO", 
+        'SAABIHAAT DLIYAA US': "KK", 
+        'PRATIWI AZZAHRA NADIA': "CBB",
+        'AREZANTI SOPHIA': "PP", 
+        'ISMAIL LAKSMI RAMADHITA': "PP", 
+        'RAMADHAN AUDIA': "DG", 
     }
     return consultant.map(map_consultant, na_action=None)
 
 
-def get_center(df_: pd.DataFrame) -> pd.Series:
+def get_student_center(df_: pd.DataFrame) -> pd.Series:
     """
     Determine the center of the student
     based on the marker inside the name (for example DLC GC).
@@ -228,13 +230,19 @@ def get_center(df_: pd.DataFrame) -> pd.Series:
     :return pd.Series: Center of each student. If no match the np.nan.
     """
 
-    pattern = f'({"|".join(centers)})'
+    pattern = f'({"|".join(config.centers)})'
 
     conditions = [
         # corporate
         (df_["is_cpt"] == True),
         # online center
         (df_["student_membership"].str.lower() == "go"),
+        # ST
+        (
+            df_["student_code"]
+            .str.upper()
+            .str.contains("(STREET TALK|STREETTALK|\(ST\))", regex=True, na=False)
+        ),
         # member code does not contain center identifier
         ~(df_["student_code"].str.upper().str.contains(pattern, regex=True, na=False)),
         # deluxe and vip, assuming they have center identifier
@@ -244,17 +252,12 @@ def get_center(df_: pd.DataFrame) -> pd.Series:
     choices = [
         "Corporate",
         "Online Center",
+        "Street Talk",
         (get_member_center_from_consultant(df_["consultant"].str.upper())),
-        (
-            df_["student_code"]
-            .str.extract("(\(.+\))", expand=False)
-            .str.replace("(", "", regex=False)
-            .str.replace(")", "", regex=False)
-            .str.extract(pattern, expand=False)
-        ),
+        (df_["student_code"].str.extract(pattern, expand=False)),
     ]
 
-    student_center = np.select(conditions, choices, default="Not Specified")
+    student_center = np.select(conditions, choices, default="NONE")
     return student_center
 
 
@@ -266,26 +269,27 @@ def get_area(df_):
     """
     conditions = [
         df_["student_center"].isna(),
-        df_["student_center"] == "Corporate",
-        df_["student_center"] == "Online Center",
-        df_["student_center"].isin(jkt_1),
-        df_["student_center"].isin(jkt_2),
-        df_["student_center"].isin(jkt_3),
-        df_["student_center"].isin(bdg),
-        df_["student_center"].isin(sby),
+        df_["student_center"].isin(config.map_areas.get("JKT 1")),
+        df_["student_center"].isin(config.map_areas.get("JKT 2")),
+        df_["student_center"].isin(config.map_areas.get("JKT 3")),
+        df_["student_center"].isin(config.map_areas.get("BDG")),
+        df_["student_center"].isin(config.map_areas.get("SBY")),
+        df_["student_center"].isin(config.map_areas.get("Other")),
+        df_["student_center"].isin(config.map_areas.get("Corporate")),
+        df_["student_center"].isin(config.map_areas.get("Online Center")),
     ]
     choices = [
-        np.nan,
-        "Corporate",
-        "Online Center",
+        "NONE",
         "JKT 1",
         "JKT 2",
         "JKT 3",
         "BDG",
         "SBY",
+        "Other",
+        "Corporate",
+        "Online Center",
     ]
-    area = np.select(conditions, choices, default="Not Specified")
-    assert (area == "ERROR").sum() == 0, "Some centers are unmapped to area"
+    area = np.select(conditions, choices, default="NONE")
     return area
 
 

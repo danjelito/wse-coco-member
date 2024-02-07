@@ -7,7 +7,7 @@ def test_all_memberships_are_filled(df_clean):
     """
     assert sorted(df_clean["student_membership"].unique()) == [
         "Deluxe",
-        "GO",
+        "Go",
         "VIP",
     ], "test_all_memberships_are_filled failed"
 

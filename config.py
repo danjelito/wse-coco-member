@@ -1,9 +1,9 @@
-month = "12 dec 2023"  # note: to find attendance data folder for current month
+month = "2024-01"  # note: to find attendance data folder for current month
 
 # map centre here
 # note: update if there are new centers
 jkt_1 = ["PP", "SDC", "KG"]
-jkt_2 = ["GC", "LW", "BSD", "TBS"]
+jkt_2 = ["GC", "LW", "BSD", "TBS", "CP"]
 jkt_3 = ["KK", "CBB", "SMB"]
 bdg = ["DG"]
 sby = ["PKW"]

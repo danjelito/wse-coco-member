@@ -51,7 +51,7 @@ def create_student_membership(df_: pd.DataFrame) -> pd.Series:
         mask_deluxe_2,
         membership_contains_vip,
     ]
-    choices = ["GO", "Deluxe", "Deluxe", "VIP"]
+    choices = ["Go", "Deluxe", "Deluxe", "VIP"]
     memberships = np.select(conditions, choices, default="NONE")
 
     # assert that all memberships are specified

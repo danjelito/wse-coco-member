@@ -3,6 +3,19 @@ import numpy as np
 import config
 
 
+def load_multiple_dfs(df_list: list) -> pd.DataFrame:
+    """Load all DF listed in the df_list and return them as one DF.
+
+    :param list df_list: paths of DFs.
+    :return pd.DataFrame: concatted DF.
+    """
+    dfs = []
+    for filepath in df_list:
+        df = pd.read_excel(filepath, skiprows=6)
+        dfs.append(df)
+    return pd.concat(dfs, ignore_index=True)
+
+
 def create_student_code(df_: pd.DataFrame) -> pd.Series:
     """
     Create new student code from last name, first name and code
@@ -209,12 +222,13 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "VISCA NATHASYA": "GC",
         "SYAHPUTRA MUHAMMAD ICHSAN": "GC",
         "KARIM ABDUL": "DG",
-        'WSE CAD': "HO", 
-        'SAABIHAAT DLIYAA US': "KK", 
-        'PRATIWI AZZAHRA NADIA': "CBB",
-        'AREZANTI SOPHIA': "PP", 
-        'ISMAIL LAKSMI RAMADHITA': "PP", 
-        'RAMADHAN AUDIA': "DG", 
+        "WSE CAD": "HO",
+        "SAABIHAAT DLIYAA US": "KK",
+        "PRATIWI AZZAHRA NADIA": "CBB",
+        "AREZANTI SOPHIA": "PP",
+        "ISMAIL LAKSMI RAMADHITA": "PP",
+        "RAMADHAN AUDIA": "DG",
+        "PRAMUDYA MUHAMMAD FAREL": "PP",
     }
     return consultant.map(map_consultant, na_action=None)
 
@@ -241,7 +255,7 @@ def get_student_center(df_: pd.DataFrame) -> pd.Series:
         (
             df_["student_code"]
             .str.upper()
-            .str.contains("(STREET TALK|STREETTALK|\(ST\))", regex=True, na=False)
+            .str.contains("STREET TALK|STREETTALK|\(ST\)", regex=True, na=False)
         ),
         # member code does not contain center identifier
         ~(df_["student_code"].str.upper().str.contains(pattern, regex=True, na=False)),

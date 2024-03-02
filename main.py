@@ -9,13 +9,8 @@ import tests
 
 # load DF
 folder_path = Path("input", config.month)
-excel_files = [f for f in os.listdir(folder_path) if f.endswith('.xls')]
-dfs = []
-for file in excel_files:
-    file_path = os.path.join(folder_path, file)
-    df = pd.read_excel(file_path, skiprows=6)
-    dfs.append(df)
-df_ori = pd.concat(dfs, ignore_index=True)
+df_list = [i for i in folder_path.glob("*.xls")]
+df_ori = module.load_multiple_dfs(df_list)
 
 # clean DF
 df_clean = (df_ori
@@ -47,7 +42,8 @@ df_clean = (df_ori
             df_["student_code"].str.contains("STREET TALK|STREETTALK", na=False)
         )
     ]
-    # ! drop duplicated member based on student code and start date
+    # ! drop duplicated member based on student code and end date
+    # somehow there is a student with different start date but same end date
     .drop_duplicates(subset=["student_code", "end_date"], keep="first")
     # ! drop unnecessary cols
     .drop(
@@ -64,6 +60,7 @@ tests.test_all_centers_are_filled(df_clean, "student_center")
 tests.test_all_areas_are_filled(df_clean, "student_area")
 tests.test_cpt_members_in_cpt_area(df_clean, "is_cpt", "student_center", "student_area")
 tests.test_noncpt_members_in_noncpt_area(df_clean, "is_cpt")
+
 
 # save df
 filename = ("coco member.xlsx").replace(" ", "_")

@@ -48,7 +48,7 @@ df_clean = (df_ori
         )
     ]
     # ! drop duplicated member based on student code and start date
-    .drop_duplicates(subset=["student_code", "start_date"], keep="first")
+    .drop_duplicates(subset=["student_code", "end_date"], keep="first")
     # ! drop unnecessary cols
     .drop(
         columns=[
@@ -59,11 +59,11 @@ df_clean = (df_ori
 )
 
 # test
-tests.test_all_memberships_are_filled(df_clean)
-tests.test_all_centers_are_filled(df_clean)
-tests.test_all_areas_are_filled(df_clean)
-tests.test_cpt_members_in_cpt_area(df_clean)
-tests.test_noncpt_members_in_noncpt_area(df_clean)
+tests.test_all_memberships_are_filled(df_clean, "student_membership")
+tests.test_all_centers_are_filled(df_clean, "student_center")
+tests.test_all_areas_are_filled(df_clean, "student_area")
+tests.test_cpt_members_in_cpt_area(df_clean, "is_cpt", "student_center", "student_area")
+tests.test_noncpt_members_in_noncpt_area(df_clean, "is_cpt")
 
 # save df
 filename = ("coco member.xlsx").replace(" ", "_")

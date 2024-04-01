@@ -228,7 +228,8 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "AREZANTI SOPHIA": "PP",
         "ISMAIL LAKSMI RAMADHITA": "PP",
         "RAMADHAN AUDIA": "DG",
-        "PRAMUDYA MUHAMMAD FAREL": "PP",
+        "PRAMUDYA MUHAMMAD FAREL": "TBS",
+        "SATI RIFALDI YUSUF": "TBS"
     }
     return consultant.map(map_consultant, na_action=None)
 

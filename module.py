@@ -229,7 +229,13 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "ISMAIL LAKSMI RAMADHITA": "PP",
         "RAMADHAN AUDIA": "DG",
         "PRAMUDYA MUHAMMAD FAREL": "TBS",
-        "SATI RIFALDI YUSUF": "TBS"
+        "SATI RIFALDI YUSUF": "TBS",
+        # added 6 may 2024
+        "ABDULBAR SOEDIBYO FADHIEL": "GC",
+        "ROMAINUR SILVIA OLYVERA": "SMB",
+        "SEBRINA DELVIRA SALSHA": "BSD",
+        "HIDAYATULLAH RAJA GLEN": "PP",
+        "MIALIDINA NADIA": "SDC",
     }
     return consultant.map(map_consultant, na_action=None)
 

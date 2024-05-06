@@ -14,7 +14,6 @@ This is a program to clean the member data from Core Course.
 
 1. This file works per month. Specify month on the top of the config.py.
 2. Clean the member data with main.ipynb.
-3. Save cleaned member data into separate folder.
 
 ## Usage:
 

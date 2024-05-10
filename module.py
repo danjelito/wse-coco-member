@@ -19,7 +19,7 @@ def load_multiple_dfs(df_list: list) -> pd.DataFrame:
 
 def create_student_name(df_: pd.DataFrame) -> pd.Series:
     """Create student name."""
-    return (df_["first_name"] + " " + df_["last_name"]).str.title()
+    return (df_["last_name"] + " " + df_["first_name"]).str.title()
 
 
 def create_student_code(df_: pd.DataFrame) -> pd.Series:

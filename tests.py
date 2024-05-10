@@ -64,3 +64,16 @@ def test_noncpt_members_in_noncpt_area(df_clean, is_cpt_col):
         .sum()
         .sum()
     ), "test_noncpt_members_in_noncpt_area"
+
+
+def test_one_code_is_one_name(df_clean, code_col, name_col):
+    """One code must have one name only."""
+
+    count_multiple = (df_clean
+        .groupby(code_col)    
+        .agg(count_student_name=(name_col, "nunique"))
+        .reset_index()
+        .loc[lambda df_: df_["count_student_name"] > 1, code_col]
+        .tolist()
+    )
+    assert not count_multiple, f"Some codes have multiple names: {count_multiple}"

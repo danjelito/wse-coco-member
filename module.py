@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import config
+from typing import List, Tuple
 
 
 def load_multiple_dfs(df_list: list) -> pd.DataFrame:
@@ -16,21 +17,29 @@ def load_multiple_dfs(df_list: list) -> pd.DataFrame:
     return pd.concat(dfs, ignore_index=True)
 
 
+def create_student_name(df_: pd.DataFrame) -> pd.Series:
+    """Create student name."""
+    return (df_["first_name"] + " " + df_["last_name"]).str.title()
+
+
 def create_student_code(df_: pd.DataFrame) -> pd.Series:
     """
     Create new student code from last name, first name and code
     Like last_name first_name code.
+    10 May 2024: change student code to membership + code
+    this is due to name can change
 
     :param pd.DataFrame df_: DF to process.
     :return pd.Series: Student code.
     """
-    return (
-        df_["last_name"].str.upper()
-        + " "
-        + df_["first_name"].str.upper()
-        + " - "
-        + df_["student_code"].astype("str")
-    ).str.strip()
+    # return (
+    #     df_["last_name"].str.upper()
+    #     + " "
+    #     + df_["first_name"].str.upper()
+    #     + " - "
+    #     + df_["student_code"].astype("str")
+    # ).str.strip()
+    return df_["student_membership"] + " " + df_["student_code"].astype(int).astype(str)
 
 
 def create_student_membership(df_: pd.DataFrame) -> pd.Series:
@@ -50,21 +59,27 @@ def create_student_membership(df_: pd.DataFrame) -> pd.Series:
     membership_contains_std = df_["service_type"] == "Standard"
     membership_contains_vip = df_["service_type"] == "VIP"
     name_contains_dlx = (
-        df_["student_code"].str.upper().str.contains("(DLX", regex=False, na=False)
+        df_["student_name"].str.upper().str.contains("(DLX", regex=False, na=False)
     )
     name_contains_go = (
-        df_["student_code"].str.upper().str.contains("(GO", regex=False, na=False)
+        df_["student_name"].str.upper().str.contains("(GO", regex=False, na=False)
+    )
+    name_contains_st = (
+        df_["student_name"]
+        .str.upper()
+        .str.contains("STREET TALK|STREETTALK", regex=False, na=False)
     )
     mask_deluxe_1 = (~name_contains_go) & membership_contains_std
     mask_deluxe_2 = (~name_contains_go) & name_contains_dlx
 
     conditions = [
+        name_contains_st,
         name_contains_go,
         mask_deluxe_1,
         mask_deluxe_2,
         membership_contains_vip,
     ]
-    choices = ["Go", "Deluxe", "Deluxe", "VIP"]
+    choices = ["Street Talk", "Go", "Deluxe", "Deluxe", "VIP"]
     memberships = np.select(conditions, choices, default="NONE")
 
     # assert that all memberships are specified
@@ -97,7 +112,7 @@ def get_cpt(df_: pd.DataFrame) -> pd.Series:
     consultant_cpt = df_["consultant"].str.upper().isin(cpt_consultants)
     # member have CPT identifier in their name
     id_contains_cpt = (
-        df_["student_code"].str.lower().str.contains(r"\Wcpt\W", regex=True, na=False)
+        df_["student_name"].str.upper().str.contains(r"\WCPT\W", regex=True, na=False)
     )
     is_cpt = consultant_cpt | id_contains_cpt
     return is_cpt
@@ -166,7 +181,6 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "ANGGA ERON": "KK",
         "RAVEN RIZQULLAH MUHAMMAD": "CBB",
         "ROSADI IMRON": "KK",
-        # new ""
         "SUNARTO (BSD) EUPHEMIA ERNEST": "BSD",
         "SUBANDI (PKW) WILLIAM HERDIYANTO": "PKW",
         "(DG) HUTASOIT ESTHER SETIAWATI": "DG",
@@ -236,6 +250,11 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "SEBRINA DELVIRA SALSHA": "BSD",
         "HIDAYATULLAH RAJA GLEN": "PP",
         "MIALIDINA NADIA": "SDC",
+        # added 10 may 2024
+        "UTAMI INDRIANI PUTRI": "KK",
+        "PUTRI (PKW) AISYAH JAZULI": "PKW",
+        "ALIFADIO NABIL": "SDC",
+        "SANUSI (KK) SOFIA NUR INDAH EKATAMI": "KK",
     }
     return consultant.map(map_consultant, na_action=None)
 
@@ -260,12 +279,12 @@ def get_student_center(df_: pd.DataFrame) -> pd.Series:
         (df_["student_membership"].str.lower() == "go"),
         # ST
         (
-            df_["student_code"]
+            df_["student_name"]
             .str.upper()
             .str.contains("STREET TALK|STREETTALK|\(ST\)", regex=True, na=False)
         ),
         # member code does not contain center identifier
-        ~(df_["student_code"].str.upper().str.contains(pattern, regex=True, na=False)),
+        ~(df_["student_name"].str.upper().str.contains(pattern, regex=True, na=False)),
         # deluxe and vip, assuming they have center identifier
         (df_["student_membership"].str.lower().isin(["deluxe", "vip"])),
     ]
@@ -275,7 +294,7 @@ def get_student_center(df_: pd.DataFrame) -> pd.Series:
         "Online Center",
         "Street Talk",
         (get_member_center_from_consultant(df_["consultant"].str.upper())),
-        (df_["student_code"].str.extract(pattern, expand=False)),
+        (df_["student_name"].str.upper().str.extract(pattern, expand=False)),
     ]
 
     student_center = np.select(conditions, choices, default="NONE")
@@ -326,3 +345,27 @@ def clean_phone_number(ser: pd.Series) -> pd.Series:
         .str.replace("+", "", regex=False)
         .str.strip()
     )
+
+
+def get_code_with_multiple_name(
+    df_clean: pd.DataFrame, code_col: str, name_col: str
+) -> Tuple[int, str]:
+    """Return a tuple of index, code of code with multiple name.
+
+    :param pd.DataFrame df_clean
+    :param str code_col
+    :param str name_col
+    :return Tuple[int, str]
+    """
+
+    count_multiple = (
+        df_clean.groupby(code_col)
+        .agg(count_student_name=(name_col, "nunique"))
+        .reset_index()
+        .loc[lambda df_: df_["count_student_name"] > 1, [code_col]]
+    )
+    idx_code = []
+    for row in count_multiple.itertuples():
+        idx_code.append((row.Index, row.student_code))
+
+    return idx_code

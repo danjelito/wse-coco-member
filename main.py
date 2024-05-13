@@ -27,7 +27,7 @@ df_clean = (df_ori
         email=lambda df_: df_["email"].str.lower().str.strip(),
         mobile=lambda df_: module.clean_phone_number(df_["mobile"]),
         consultant = lambda df_: df_["consultant"].str.upper(),
-        is_cpt = lambda df_: module.get_cpt(df_), 
+        is_cpt = lambda df_: module.is_cpt(df_), 
         student_center = lambda df_: module.get_student_center(df_),
         student_area = lambda df_: module.get_area(df_),
     )
@@ -65,7 +65,7 @@ for idx, code in module.get_code_with_multiple_name(df_clean, "student_code", "s
     name_contains_cad = df_clean["student_name"].str.lower().str.contains("cad_sales|cad sales")
     contract_invalid = df_clean["contract_status"] == "Invalid"
     
-    # if there is only one email
+    # if there is only one unique email (meaning that this is one person)
     if df_clean.loc[code_match, "email"].nunique() == 1:
         # drop one name with "freeze"
         idx_duplicate = df_clean.loc[code_match & name_contains_freeze].index.values
@@ -74,7 +74,8 @@ for idx, code in module.get_code_with_multiple_name(df_clean, "student_code", "s
         idx_duplicate = df_clean.loc[code_match & name_contains_cad].index.values
         df_clean = df_clean.drop(idx_duplicate, axis="index")
     
-    # if there is multiple email
+    # if there is multiple email (meaning that this is multiple people)
+    # drop one with invalid contract
     else:
         idx_duplicate = df_clean.loc[code_match & contract_invalid].index.values
         df_clean = df_clean.drop(idx_duplicate, axis="index")

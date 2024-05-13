@@ -18,7 +18,9 @@ def load_multiple_dfs(df_list: list) -> pd.DataFrame:
 
 
 def create_student_name(df_: pd.DataFrame) -> pd.Series:
-    """Create student name."""
+    """Create student name from first and last name.
+    Coco name is started from last, then first.
+    """
     return (df_["last_name"] + " " + df_["first_name"]).str.title()
 
 
@@ -59,15 +61,19 @@ def create_student_membership(df_: pd.DataFrame) -> pd.Series:
     membership_contains_std = df_["service_type"] == "Standard"
     membership_contains_vip = df_["service_type"] == "VIP"
     name_contains_dlx = (
-        df_["student_name"].str.upper().str.contains("(DLX", regex=False, na=False)
+        df_["student_name"]
+        .str.upper()
+        .str.contains("(DLX", regex=False, na=False)
     )
     name_contains_go = (
-        df_["student_name"].str.upper().str.contains("(GO", regex=False, na=False)
+        df_["student_name"]
+        .str.upper()
+        .str.contains("(GO", regex=False, na=False)
     )
     name_contains_st = (
         df_["student_name"]
         .str.upper()
-        .str.contains("STREET TALK|STREETTALK", regex=False, na=False)
+        .str.contains("STREET TALK|STREETTALK", regex=True, na=False)
     )
     mask_deluxe_1 = (~name_contains_go) & membership_contains_std
     mask_deluxe_2 = (~name_contains_go) & name_contains_dlx
@@ -83,12 +89,12 @@ def create_student_membership(df_: pd.DataFrame) -> pd.Series:
     memberships = np.select(conditions, choices, default="NONE")
 
     # assert that all memberships are specified
-    assert not (memberships == "NONE").sum()
+    assert not (memberships == "NONE").sum(), "Some memberships are not specified."
 
     return memberships
 
 
-def get_cpt(df_: pd.DataFrame) -> pd.Series:
+def is_cpt(df_: pd.DataFrame) -> pd.Series:
     """
     Determine whether a student is a CPT student or not
     based on consultants and ID.
@@ -278,11 +284,7 @@ def get_student_center(df_: pd.DataFrame) -> pd.Series:
         # online center
         (df_["student_membership"].str.lower() == "go"),
         # ST
-        (
-            df_["student_name"]
-            .str.upper()
-            .str.contains("STREET TALK|STREETTALK|\(ST\)", regex=True, na=False)
-        ),
+        (df_["student_membership"].str.lower() == "street talk"),
         # member code does not contain center identifier
         ~(df_["student_name"].str.upper().str.contains(pattern, regex=True, na=False)),
         # deluxe and vip, assuming they have center identifier

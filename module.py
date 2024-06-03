@@ -261,6 +261,8 @@ def get_member_center_from_consultant(consultant: pd.Series) -> pd.Series:
         "PUTRI (PKW) AISYAH JAZULI": "PKW",
         "ALIFADIO NABIL": "SDC",
         "SANUSI (KK) SOFIA NUR INDAH EKATAMI": "KK",
+        # added 3 jun 2024
+        "OCTAVIANO EZRA": "KK",
     }
     return consultant.map(map_consultant, na_action=None)
 

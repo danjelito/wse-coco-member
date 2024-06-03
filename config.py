@@ -1,4 +1,4 @@
-month = "2024-04"  # note: to find attendance data folder for current month
+month = "2024-05"  # note: to find attendance data folder for current month
 
 # map centre here
 # note: update if there are new centers
